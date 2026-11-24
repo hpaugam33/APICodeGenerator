@@ -1,0 +1,21 @@
+// GENERATED CODE — DO NOT EDIT.
+// Source of truth: OpenAPI/AsyncAPI specs. Regenerate with:
+//   python -m apigen --openapi specs/order-service.openapi.yaml --asyncapi specs/order-events.asyncapi.yaml --target both --out generated --package com.example.orderservice --crate order_service
+
+package com.example.orderservice.model;
+
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
+
+public record OrderLine(
+        @NotNull UUID productId,
+        @NotNull
+        @Min(1)
+        Integer quantity,
+        @NotNull
+        @DecimalMin("0")
+        Double unitPrice
+) {
+}

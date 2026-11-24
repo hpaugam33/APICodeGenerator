@@ -1,0 +1,90 @@
+asyncapi: 3.0.0
+info:
+  title: Order Service Events
+  description: >-
+    Asynchronous information flows exported from EA (OrderManagement model).
+    Shared data model schemas are referenced from the OpenAPI export of the same model.
+  version: 1.4.0
+  x-ea-model: OrderManagement
+defaultContentType: application/json
+channels:
+  order.events:
+    address: order.events
+    title: Order lifecycle events published by the order service
+    bindings:
+      kafka: { topic: orders, partitions: 6, replicas: 3 }
+    messages:
+      OrderCreated: { $ref: '#/components/messages/OrderCreated' }
+      OrderUpdated: { $ref: '#/components/messages/OrderUpdated' }
+  payment.events:
+    address: payment.events
+    title: Payment outcomes consumed by the order service
+    bindings:
+      kafka: { topic: payments, partitions: 3, replicas: 3 }
+    messages:
+      PaymentConfirmed: { $ref: '#/components/messages/PaymentConfirmed' }
+      PaymentRejected: { $ref: '#/components/messages/PaymentRejected' }
+operations:
+  publishOrderCreated:
+    action: send
+    channel: { $ref: '#/channels/order.events' }
+    messages:
+      - $ref: '#/channels/order.events/messages/OrderCreated'
+    x-ea-flow: FL-1001
+  publishOrderUpdated:
+    action: send
+    channel: { $ref: '#/channels/order.events' }
+    messages:
+      - $ref: '#/channels/order.events/messages/OrderUpdated'
+    x-ea-flow: FL-1002
+  consumePaymentConfirmed:
+    action: receive
+    channel: { $ref: '#/channels/payment.events' }
+    messages:
+      - $ref: '#/channels/payment.events/messages/PaymentConfirmed'
+    x-ea-flow: FL-2001
+  consumePaymentRejected:
+    action: receive
+    channel: { $ref: '#/channels/payment.events' }
+    messages:
+      - $ref: '#/channels/payment.events/messages/PaymentRejected'
+    x-ea-flow: FL-2002
+components:
+  messages:
+    OrderCreated:
+      name: OrderCreated
+      contentType: application/json
+      payload: { $ref: '#/components/schemas/OrderEvent' }
+    OrderUpdated:
+      name: OrderUpdated
+      contentType: application/json
+      payload: { $ref: '#/components/schemas/OrderEvent' }
+    PaymentConfirmed:
+      name: PaymentConfirmed
+      contentType: application/json
+      payload: { $ref: '#/components/schemas/PaymentEvent' }
+    PaymentRejected:
+      name: PaymentRejected
+      contentType: application/json
+      payload: { $ref: '#/components/schemas/PaymentEvent' }
+  schemas:
+    OrderEvent:
+      type: object
+      x-ea-class: OrderEvent
+      required: [eventId, orderId, type, occurredAt, order]
+      properties:
+        eventId: { type: string, format: uuid }
+        orderId: { type: string, format: uuid }
+        type: { type: string, enum: [ORDER_CREATED, ORDER_UPDATED] }
+        occurredAt: { type: string, format: date-time }
+        order: { $ref: './order-service.openapi.yaml#/components/schemas/Order' }
+    PaymentEvent:
+      type: object
+      x-ea-class: PaymentEvent
+      required: [eventId, orderId, status, occurredAt]
+      properties:
+        eventId: { type: string, format: uuid }
+        orderId: { type: string, format: uuid }
+        status: { type: string, enum: [CONFIRMED, REJECTED] }
+        reason: { type: string, maxLength: 500, description: Present when status is REJECTED }
+        occurredAt: { type: string, format: date-time }
