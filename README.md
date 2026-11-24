@@ -1,13 +1,13 @@
 # apigen — OpenAPI/AsyncAPI → service API interfaces + data model code
 
-`apigen` is the last stage of your EA-driven pipeline:
+`apigen` turns API spec files into service code:
 
 ```
-Sparx Enterprise Architect                apigen                       your services
-┌──────────────────────────┐   export    ┌────────────────────┐   gen   ┌──────────────────────┐
-│ Data Model (classes)     │ ──────────► │ OpenAPI 3.x spec   │ ──────► │ REST API interface   │
-│ Information Flows        │ ──────────► │ AsyncAPI 2.x/3.x   │ ──────► │ message producers/   │
-└──────────────────────────┘             └────────────────────┘         │ consumers + data model│
+API specs                                 apigen                       your services
+┌──────────────────────┐                  ┌────────────────────┐   gen   ┌──────────────────────┐
+│ OpenAPI 3.x spec     │ ───────────────► │                    │ ──────► │ REST API interface   │
+│ AsyncAPI 2.x/3.x     │                  │      apigen        │         │ message producers/   │
+└──────────────────────┘                  └────────────────────┘         │ consumers + data model│
                                                                       └──────────────────────┘
                                                                              Java Quarkus | Rust
 ```
@@ -19,9 +19,9 @@ and the **data model** classes, in **Java Quarkus** and/or **Rust**.
 ## Quickstart
 
 ```bash
-pip install -r requirements.txt          # PyYAML only
+cargo install --path .        # or: cargo build --release -> target/release/apigen
 
-python3 -m apigen \
+apigen \
   --openapi  specs/order-service.openapi.yaml \
   --asyncapi specs/order-events.asyncapi.yaml \
   --target both \
@@ -29,11 +29,11 @@ python3 -m apigen \
   --package com.example.orderservice \
   --crate order_service
 
-python3 -m unittest discover -s tests    # test suite
+cargo test                    # test suite
 ```
 
-`specs/` contains a sample EA-style export (Order/Customer model + order/payment
-information flows) used as the demo input. Replace with your real exports.
+`specs/` contains a sample spec set (Order/Customer model + order/payment event
+flows) used as the demo input. Replace with your own specs.
 
 ### CLI options
 
@@ -76,8 +76,8 @@ compiles with `javac` against the Jakarta/MicroProfile API jars.
 ## Update semantics — full regenerate
 
 Each run deletes and rebuilds the target directory. The specs are the single
-source of truth, so adding/removing/renaming an EA class or information flow
-and re-exporting the specs is enough to update every service interface.
+source of truth, so adding/removing/renaming a model class or event flow in
+the specs is enough to update every service interface.
 Hand-written code must live **outside** the generated packages
 (e.g. `service/`, `infra/` in Quarkus; your own modules next to `api/`,
 `model/`, `messaging/` in Rust, plus broker implementations of the generated
@@ -103,7 +103,7 @@ hot services, very high message rates, cost/latency-critical → **Rust**.
 The generator emits both from the same IR, so you can benchmark both with the
 same specs.
 
-## How EA exports are consumed
+## How the specs are consumed
 
 - OpenAPI `components.schemas` → data model classes (objects → records/structs,
   `enum` → enums, `allOf` → flattened fields, inline object/enum properties →
@@ -115,9 +115,9 @@ same specs.
   flows per channel; `bindings.kafka.topic` (or the channel address) becomes
   the topic; message `payload` → typed event model.
 - Cross-file `$ref`s (`./order-service.openapi.yaml#/components/schemas/Order`)
-  are resolved, so the shared EA data model can live in the OpenAPI export and
-  be referenced from the AsyncAPI export.
-- EA names with spaces/accents ("Détails de la commande") are normalized to
+  are resolved, so the shared data model can live in the OpenAPI spec and be
+  referenced from the AsyncAPI spec.
+- Names with spaces/accents ("Détails de la commande") are normalized to
   language-safe identifiers (`DetailsDeLaCommande` / `details_de_la_commande`).
 
 ## Limitations / next steps

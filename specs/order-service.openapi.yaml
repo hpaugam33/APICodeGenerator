@@ -1,9 +1,8 @@
 openapi: 3.0.3
 info:
   title: Order Service API
-  description: REST API exported from the EA data model (Order, Customer, Address) and information flows.
+  description: REST API of the order service (Order, Customer, Address model).
   version: 1.4.0
-  x-ea-model: OrderManagement
 servers:
   - url: https://api.example.com/v1
 tags:
@@ -147,7 +146,6 @@ components:
   schemas:
     Order:
       type: object
-      x-ea-class: Order
       required: [id, customerId, status, lines, createdAt]
       properties:
         id: { type: string, format: uuid, description: Order identifier }
@@ -172,7 +170,6 @@ components:
         unitPrice: { type: number, format: double, minimum: 0 }
     Customer:
       type: object
-      x-ea-class: Customer
       required: [id, firstName, lastName, email]
       properties:
         id: { type: string, format: uuid }

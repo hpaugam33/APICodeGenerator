@@ -2,10 +2,9 @@ asyncapi: 3.0.0
 info:
   title: Order Service Events
   description: >-
-    Asynchronous information flows exported from EA (OrderManagement model).
-    Shared data model schemas are referenced from the OpenAPI export of the same model.
+    Asynchronous event flows of the order service (order lifecycle events,
+    payment outcomes). Shared data model schemas are referenced from the OpenAPI spec.
   version: 1.4.0
-  x-ea-model: OrderManagement
 defaultContentType: application/json
 channels:
   order.events:
@@ -30,25 +29,21 @@ operations:
     channel: { $ref: '#/channels/order.events' }
     messages:
       - $ref: '#/channels/order.events/messages/OrderCreated'
-    x-ea-flow: FL-1001
   publishOrderUpdated:
     action: send
     channel: { $ref: '#/channels/order.events' }
     messages:
       - $ref: '#/channels/order.events/messages/OrderUpdated'
-    x-ea-flow: FL-1002
   consumePaymentConfirmed:
     action: receive
     channel: { $ref: '#/channels/payment.events' }
     messages:
       - $ref: '#/channels/payment.events/messages/PaymentConfirmed'
-    x-ea-flow: FL-2001
   consumePaymentRejected:
     action: receive
     channel: { $ref: '#/channels/payment.events' }
     messages:
       - $ref: '#/channels/payment.events/messages/PaymentRejected'
-    x-ea-flow: FL-2002
 components:
   messages:
     OrderCreated:
@@ -70,7 +65,6 @@ components:
   schemas:
     OrderEvent:
       type: object
-      x-ea-class: OrderEvent
       required: [eventId, orderId, type, occurredAt, order]
       properties:
         eventId: { type: string, format: uuid }
@@ -80,7 +74,6 @@ components:
         order: { $ref: './order-service.openapi.yaml#/components/schemas/Order' }
     PaymentEvent:
       type: object
-      x-ea-class: PaymentEvent
       required: [eventId, orderId, status, occurredAt]
       properties:
         eventId: { type: string, format: uuid }

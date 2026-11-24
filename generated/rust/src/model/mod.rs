@@ -1,6 +1,6 @@
 //! GENERATED CODE — DO NOT EDIT.
 //! Source of truth: OpenAPI/AsyncAPI specs. Regenerate with:
-//!   python -m apigen --openapi specs/order-service.openapi.yaml --asyncapi specs/order-events.asyncapi.yaml --target both --out generated --package com.example.orderservice --crate order_service
+//!   apigen --openapi specs/order-service.openapi.yaml --asyncapi specs/order-events.asyncapi.yaml --target both --out generated --package com.example.orderservice --crate order_service
 
 pub mod address;
 pub mod create_customer_request;
